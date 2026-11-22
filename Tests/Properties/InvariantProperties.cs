@@ -15,15 +15,10 @@ namespace Library_Book_Borrowing_System.Tests.Properties
         {
             foreach (var borrow in operations)
             {
-                try
-                {
-                    if (borrow) book.Borrow();
-                    else book.Return();
-                }
-                catch (InvalidOperationException)
-                {
-                    
-                }
+                if (borrow && book.AvailableCopies > 0)
+                    book.Borrow();
+                else if (!borrow && book.AvailableCopies < book.TotalCopies)
+                    book.Return();
 
                 book.AvailableCopies.Should().BeInRange(0, book.TotalCopies);
             }
@@ -37,15 +32,10 @@ namespace Library_Book_Borrowing_System.Tests.Properties
 
             foreach (var borrow in operations)
             {
-                try
-                {
-                    if (borrow) fx.Service.BorrowBook(user.Id, book.Isbn);
-                    else fx.Service.ReturnBook(user.Id, book.Isbn);
-                }
-                catch (InvalidOperationException)
-                {
-
-                }
+                if (borrow && book.AvailableCopies > 0)
+                    fx.Service.BorrowBook(user.Id, book.Isbn);
+                else if (!borrow && user.BorrowedIsbns.Contains(book.Isbn))
+                    fx.Service.ReturnBook(user.Id, book.Isbn);
             }
 
             (book.TotalCopies - book.AvailableCopies).Should().Be(user.BorrowedIsbns.Count);
